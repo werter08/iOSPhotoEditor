@@ -7,11 +7,9 @@
 
 import SwiftUI
 
-struct LoginInView: View {
-    @EnvironmentObject var coordinator: Coordinator
+struct LoginView: View {
     @StateObject private var loginViewModel = LogInViewModel()
     @FocusState private var focusedField: AuthFieldType?
-    
     
     var body: some View {
         NavigationStack {
@@ -49,18 +47,18 @@ struct LoginInView: View {
 
                 Spacer()
 
-                CustomButton(title: "Submit") {
+                Text(loginViewModel.errorMessage)
+                    .foregroundColor(.red)
+                    .font(.caption)
+                    .transition(.opacity)
+                
+                CustomButton(title: "Submit", showProggresView: $loginViewModel.inProccess) {
                     if !loginViewModel.canRequest {
                         withAnimation {
                             loginViewModel.showErrors = true
                         }
                     } else {
-                        loginViewModel.requestLogIn { isLoggedIn in
-                            if isLoggedIn {
-                                UserDefaultsManager.userAuthorized = true
-                                coordinator.flow = .home
-                            }
-                        }
+                        loginViewModel.requestLogIn()
                     }
                 }
 
@@ -94,5 +92,5 @@ struct LoginInView: View {
 
 
 #Preview {
-    LoginInView()
+    LoginView()
 }

@@ -24,13 +24,6 @@ struct UserDefaultsManager {
     static var openFirstWelcomePage: Bool
     
     
-    // MARK: - Complex Type Example
-    struct UserProfile: Codable {
-        let email: String
-        
-        static let empty = UserProfile(email: "")
-    }
-    
     @UserDefault(UserDefaultsKeys.userProfileKey, defaultValue: UserProfile.empty)
     static var userProfile: UserProfile
     
@@ -46,4 +39,13 @@ struct UserDefaultsManager {
         keys.forEach { defaults.removeObject(forKey: $0) }
         print("🔄 UserDefaults reset to defaults")
     }
+}
+
+
+
+struct UserProfile: Codable {
+    let email: String
+    let isVerifeid: Bool
+    
+    static let empty = UserProfile(email: "", isVerifeid: false)
 }

@@ -9,18 +9,16 @@ import SwiftUI
 import CoreData
 
 struct ContentView: View {
-    @StateObject var coordinator = Coordinator()
+    @AppStorage("user_authorized") var isAuthorized: Bool = false
     
     var body: some View {
-        switch coordinator.flow {
-        case .home:
-            HomeView()
-                .environmentObject(coordinator)
-        case .login:
-            LoginInView()
-                .environmentObject(coordinator)
+        NavigationStack {
+            if isAuthorized {
+                HomeView()
+            } else {
+                LoginView()
+            }
         }
-        
     }
 }
    

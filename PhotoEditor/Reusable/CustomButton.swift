@@ -8,7 +8,6 @@ import SwiftUI
 
 struct CustomButton: View {
     var title: String
-    var action: () -> Void
     var maxWidthIsInfinity: Bool = true
     var font: Font = .headline
     var foregroundColor: Color = .white
@@ -16,9 +15,14 @@ struct CustomButton: View {
     var cornerRadius: CGFloat = 12
     var horizontalPadding: CGFloat = 16
     var verticalPadding: CGFloat = 14
+    
+    
 
     @State private var isPressed = false
+    @Binding var showProggresView: Bool
 
+    var action: () -> Void
+    
     var body: some View {
         Button(action: {
             withAnimation(.easeInOut(duration: 0.15)) {
@@ -31,21 +35,27 @@ struct CustomButton: View {
             }
             action()
         }) {
-            Text(title)
-                .font(font)
-                .foregroundColor(foregroundColor)
-                .padding(.horizontal, horizontalPadding)
-                .padding(.vertical, verticalPadding)
-                .frame(maxWidth: maxWidthIsInfinity ? .infinity : .none)
-                .background(backgroundColor)
-                .cornerRadius(cornerRadius)
-                .scaleEffect(isPressed ? 0.95 : 1.0)
+            if showProggresView {
+                ProgressView()
+            } else {
+                Text(title)
+   
+            }
         }
+        .font(font)
+        .tint(.white)
+        .foregroundColor(foregroundColor)
+        .padding(.horizontal, horizontalPadding)
+        .padding(.vertical, verticalPadding)
+        .frame(maxWidth: maxWidthIsInfinity ? .infinity : .none)
+        .background(backgroundColor)
+        .cornerRadius(cornerRadius)
+        .scaleEffect(isPressed ? 0.95 : 1.0)
         .buttonStyle(.plain)
     }
 }
 
 
 #Preview {
-    CustomButton(title: "send data", action: {})
+    CustomButton(title: "send data", showProggresView: .constant(true), action: {})
 }

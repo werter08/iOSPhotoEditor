@@ -6,12 +6,14 @@
 //
 
 import Foundation
-
+import FirebaseAuth
 
 class LogInViewModel: ObservableObject {
     @Published var email: String = ""
     @Published var password: String = ""
     @Published var showErrors: Bool = false
+    @Published var inProccess: Bool = false
+    @Published var errorMessage: String = ""
     
     var canRequest: Bool {
         isValidPassword() || isValidEmail()
@@ -35,8 +37,18 @@ class LogInViewModel: ObservableObject {
         !isValidPassword()
     }
     
-    func requestLogIn(result: @escaping (Bool) -> ()) {
+    func requestLogIn() {
         print("logIn")
-        result(true)
+        inProccess = true
+        Auth.auth().signIn(withEmail: email, password: password) { [weak self] result, error in
+            guard let user = result?.user else {
+                self?.errorMessage = error?.localizedDescription ?? ""
+                self?.inProccess = false
+                return
+            }
+            UserDefaultsManager.userAuthorized = true
+            UserDefaultsManager.userProfile = UserProfile(email: user.email ?? "", isVerifeid: user.isEmailVerified)
+            self?.inProccess = false
+        }
     }
 }

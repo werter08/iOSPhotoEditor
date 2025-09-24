@@ -6,6 +6,12 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		8E1CCA8B2E82C3AD00BCC17B /* FirebaseAI in Frameworks */ = {isa = PBXBuildFile; productRef = 8E1CCA8A2E82C3AD00BCC17B /* FirebaseAI */; };
+		8E1CCA8D2E82C3AD00BCC17B /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 8E1CCA8C2E82C3AD00BCC17B /* FirebaseAnalytics */; };
+		8E1CCA8F2E82C67300BCC17B /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 8E1CCA8E2E82C67300BCC17B /* FirebaseAuth */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		8E1CC9FA2E82880900BCC17B /* PhotoEditor.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PhotoEditor.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -23,6 +29,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8E1CCA8D2E82C3AD00BCC17B /* FirebaseAnalytics in Frameworks */,
+				8E1CCA8F2E82C67300BCC17B /* FirebaseAuth in Frameworks */,
+				8E1CCA8B2E82C3AD00BCC17B /* FirebaseAI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +74,9 @@
 			);
 			name = PhotoEditor;
 			packageProductDependencies = (
+				8E1CCA8A2E82C3AD00BCC17B /* FirebaseAI */,
+				8E1CCA8C2E82C3AD00BCC17B /* FirebaseAnalytics */,
+				8E1CCA8E2E82C67300BCC17B /* FirebaseAuth */,
 			);
 			productName = PhotoEditor;
 			productReference = 8E1CC9FA2E82880900BCC17B /* PhotoEditor.app */;
@@ -94,6 +106,9 @@
 			);
 			mainGroup = 8E1CC9F12E82880900BCC17B;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				8E1CCA892E82C3AD00BCC17B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 8E1CC9FB2E82880900BCC17B /* Products */;
 			projectDirPath = "";
@@ -255,6 +270,7 @@
 				DEVELOPMENT_TEAM = UD9D6B9D7C;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Can we access to the library?";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -284,6 +300,7 @@
 				DEVELOPMENT_TEAM = UD9D6B9D7C;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Can we access to the library?";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -324,6 +341,35 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		8E1CCA892E82C3AD00BCC17B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.3.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		8E1CCA8A2E82C3AD00BCC17B /* FirebaseAI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8E1CCA892E82C3AD00BCC17B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAI;
+		};
+		8E1CCA8C2E82C3AD00BCC17B /* FirebaseAnalytics */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8E1CCA892E82C3AD00BCC17B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAnalytics;
+		};
+		8E1CCA8E2E82C67300BCC17B /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 8E1CCA892E82C3AD00BCC17B /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 8E1CC9F22E82880900BCC17B /* Project object */;
 }

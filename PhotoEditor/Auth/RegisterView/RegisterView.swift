@@ -8,8 +8,10 @@
 import SwiftUI
 
 struct RegisterView: View {
+    @Environment(\.dismiss) private var dismiss
     @StateObject private var registerViewModel = RegisterViewModel()
     @FocusState private var focusedField: AuthFieldType?
+    @State var showLogin = false
     
     var body: some View {
         VStack(spacing: 24) {
@@ -57,13 +59,20 @@ struct RegisterView: View {
 
             Spacer()
 
-            CustomButton(title: "Register") {
+            Text(registerViewModel.errorMessage)
+                .foregroundColor(.red)
+                .font(.caption)
+                .transition(.opacity)
+            
+            CustomButton(title: "Register", showProggresView: $registerViewModel.inProccess) {
                 if !registerViewModel.canRequest {
                     withAnimation {
                         registerViewModel.showErrors = true
                     }
                 } else {
-                    registerViewModel.requestRegister()
+                    registerViewModel.requestRegister {
+                        dismiss()
+                    }
                 }
             }
 
@@ -75,7 +84,7 @@ struct RegisterView: View {
                         .foregroundColor(.secondary)
 
                     NavigationLink("Log in") {
-                        LoginInView()
+                        LoginView()
                     }
                     .font(.footnote)
                     .foregroundColor(.blue)

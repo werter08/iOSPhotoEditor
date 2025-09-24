@@ -6,13 +6,17 @@
 //
 
 import Foundation
-
+import FirebaseAuth
 
 class RegisterViewModel: ObservableObject {
+    @Published var user: User?
     @Published var email: String = ""
     @Published var password: String = ""
     @Published var confPassword: String = ""
+    @Published var errorMessage: String = ""
     @Published var showErrors: Bool = false
+    @Published var inProccess: Bool = false
+
     
     var canRequest: Bool {
         isValidPassword() || isValidEmail()
@@ -43,7 +47,16 @@ class RegisterViewModel: ObservableObject {
         !isValidConfPassword()
     }
     
-    func requestRegister() {
-        print("Register")
+    func requestRegister(onSuccess: @escaping () -> ()) {
+        inProccess = true
+        Auth.auth().createUser(withEmail: email, password: password) { [weak self] result, error in
+            if let error {
+                self?.inProccess = false
+                self?.errorMessage = error.localizedDescription
+                return
+            }
+            self?.inProccess = false
+            onSuccess()
+        }
     }
 }

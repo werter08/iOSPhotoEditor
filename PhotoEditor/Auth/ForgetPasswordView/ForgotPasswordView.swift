@@ -6,18 +6,16 @@
 //
 
 import SwiftUI
+import FirebaseAuth
 
 struct ForgotPasswordEmailView: View {
     
+    @Environment(\.dismiss) private var dismiss
+    @StateObject private var loginViewModel = LogInViewModel()
     @FocusState private var isFocused: AuthFieldType?
     @State private var email: String = ""
-    @State private var showResetPasswordView = false
-    
-    var isRed: Bool {
-        let emailRegex = #"^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$"#
-        let predicate = NSPredicate(format: "SELF MATCHES[c] %@", emailRegex)
-        return predicate.evaluate(with: email)
-    }
+    @State private var inProccess = false
+   
 
     var body: some View {
         VStack(spacing: 24) {
@@ -29,27 +27,35 @@ struct ForgotPasswordEmailView: View {
 
             AuthInputField(
                 placeholder: "example@gmail.com",
-                text: $email,
+                text: $loginViewModel.email,
                 fieldType: .email,
                 isSecure: false,
-                isRed: isRed,
+                isRed: loginViewModel.emailIsRed && loginViewModel.showErrors,
                 errorMessage: "Email isn't valid",
                 keyboardType: .emailAddress,
                 textContentType: .emailAddress,
                 focusedField: $isFocused
             )
+            
+            CustomButton(title: "Send Reset Link", showProggresView: $inProccess) {
+                inProccess = true
+                Auth.auth().sendPasswordReset(withEmail: loginViewModel.email) { error in
+                    if let error {
+                        print(error)
+                        inProccess = false
+                        return
+                    } else {
+                        inProccess = false
+                        dismiss()
+                    }
+                }
 
-            CustomButton(title: "Send Reset Link") {
-                showResetPasswordView = true
             }
             
             Spacer()
         }
         .padding()
         .background(Color(.systemGroupedBackground).ignoresSafeArea())
-        .navigationDestination(isPresented: $showResetPasswordView) {
-            ResetPasswordView()
-        }
     }
 }
 
