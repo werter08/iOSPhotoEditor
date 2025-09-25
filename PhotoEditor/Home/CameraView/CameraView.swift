@@ -11,8 +11,8 @@ import Foundation
 
 struct CameraView: UIViewControllerRepresentable {
     // for get access parents image
-    @Binding var image: UIImage?
-    
+    @Binding var imageData: Data
+    var onSet: (() -> ())?
     // dismiss the view when it done
     @Environment (\.presentationMode) var presentationMode
     
@@ -45,8 +45,9 @@ struct CameraView: UIViewControllerRepresentable {
         }
         
         func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-            if let image = info[.originalImage] as? UIImage {
-                parent.image = image
+            if let image = (info[.originalImage] as? UIImage)?.pngData() {
+                parent.imageData = image
+                parent.onSet?()
                 parent.presentationMode.wrappedValue.dismiss()
             }
         }

@@ -8,9 +8,15 @@
 import Foundation
 import Photos
 import UIKit
+import PencilKit
 
 class CustomImageManager {
-    static func saveImageToPhotoLibrary(image: UIImage) {
+    static func saveImageToPhotoLibrary(image: UIImage?, onSuccess: @escaping () -> ()) {
+        guard let image else {
+            print("cant get image from data")
+            return
+        }
+        
         PHPhotoLibrary.requestAuthorization { status in
             if status == .authorized {
                 PHPhotoLibrary.shared().performChanges({
@@ -18,6 +24,7 @@ class CustomImageManager {
                 }) { success, error in
                     if success {
                         print("Image saved to library.")
+                        onSuccess()
                     } else {
                         print("Error saving image: \(String(describing: error))")
                     }
