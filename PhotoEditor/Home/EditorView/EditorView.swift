@@ -12,6 +12,7 @@ import PhotosUI
 struct EditerView: View {
     @State private var refreshID = UUID()
     @StateObject var drawingViewModel = DrawingViewModel()
+
     
     var body: some View {
         ZStack {
@@ -21,24 +22,32 @@ struct EditerView: View {
                 } else {
                     if let uiImage = UIImage(data: drawingViewModel.imageData) {
                         
-                        Image(uiImage: uiImage)
-                            .resizable()
-                            .scaledToFit()
-                            .overlay {
-                                GeometryReader { proxy in
-                                    let size = proxy.size
-                                    CanvasView(
-                                        canvas: $drawingViewModel.canvas,
-                                        canDraw: $drawingViewModel.canDraw,
-                                        toolPicker: $drawingViewModel.toolPicker,
-                                        rect: size
-                                    )
-                                    .clipped()
-                                    .id(refreshID)
-                                    
-                                    TextesLayerView()
-                                }
+                        if drawingViewModel.size != .zero {
+                            Color.green
+                                .frame(width: drawingViewModel.size.width, height: drawingViewModel.size.height)
+                        }
+                        
+                        EditableImageView(uiImage: uiImage)
+
+                        if !drawingViewModel.resizeMode {
+                            
+                            if drawingViewModel.size != .zero  {
+                                CanvasView(
+                                    canvas: $drawingViewModel.canvas,
+                                    canDraw: $drawingViewModel.canDraw,
+                                    toolPicker: $drawingViewModel.toolPicker,
+                                    rect: drawingViewModel.size
+                                )
+                                .frame(width: drawingViewModel.size.width, height: drawingViewModel.size.height)
+                                .clipped()
+                                .id(refreshID)
                             }
+                            
+                            if drawingViewModel.size != .zero {
+                                TextesLayerView()
+                            }
+                            
+                        }
                     }
                 }
             }
@@ -47,13 +56,32 @@ struct EditerView: View {
             .overlay(alignment: .top) {
                 topBarButtons
             }
-            .overlay(alignment: .center) {
+            .overlay(alignment: .bottom) {
+                
                 if drawingViewModel.imageData != Data(count: 0) {
                     if drawingViewModel.imageData != Data(count: 0) {
-                        CustomButton(title: "Add text", systemIcon: "plus", showProggresView: .constant(false)) {
-                            drawingViewModel.startTextAdding()
+                        
+                        HStack {
+                            CustomButton(title: "Add Text", systemIcon: "plus", showProggresView: .constant(false)) {
+                                drawingViewModel.startTextAdding()
+                            }
+                            
+                            if drawingViewModel.resizeMode {
+                                CustomButton(title: "Paint Mode", systemIcon: "paintpalette.fill", showProggresView: .constant(false)) {
+                                    drawingViewModel.openPaintMode()
+                                }
+                            } else {
+                                CustomButton(title: "Resize Mode", systemIcon: "paintpalette.fill", showProggresView: .constant(false)) {
+                                    drawingViewModel.openResizeMode()
+                                    
+                                }
+                            }
                         }
-                        .padding(.horizontal, 50)
+                        
+                        .padding(.vertical, 100)
+                        .padding(.horizontal, 20)
+                        
+                        
                     }
                 }
             }
@@ -61,23 +89,13 @@ struct EditerView: View {
             if drawingViewModel.addNewTextBox {
                 EditTextView()
             }
+            
         }
+    
         
         .sheet(isPresented: $drawingViewModel.showCamera, content: {
-//            CameraView(imageData: $drawingViewModel.imageData) {
-//                drawingViewModel.onSetImage()
-//            }
-            if let uiImage = UIImage(data: drawingViewModel.imageData) {
-                FullExportView(
-                    uiImage:    uiImage,
-                    canvasView: drawingViewModel.canvas,
-                    textBoxes:  drawingViewModel.textBoxes,
-                    canDraw:    drawingViewModel.canDraw,
-                    toolPicker: drawingViewModel.toolPicker
-                    )
-                .frame(width: 1080/4, height: 1920/4)
-            } else {
-                EmptyView()
+            CameraView(imageData: $drawingViewModel.imageData) {
+                drawingViewModel.onSetImage()
             }
             
         })
@@ -106,7 +124,6 @@ struct EditerView: View {
             if drawingViewModel.imageData != Data(count: 0) {
                 Button {
                     drawingViewModel.saveAnImage()
-                    drawingViewModel.showCamera = true
                 } label: {
                     if drawingViewModel.isSaving {
                         ProgressView()
@@ -124,6 +141,11 @@ struct EditerView: View {
     @ViewBuilder
     var emptyView: some View {
         VStack {
+            Text("Edit your own photo")
+                .padding(.vertical, 150)
+                .font(.system(size: 48, weight: .bold))
+                .multilineTextAlignment(.center)
+            
             CustomButton(title: "make a photo",systemIcon: "camera", showProggresView: .constant(false)) {
                 drawingViewModel.showCamera = true
             }
@@ -131,7 +153,7 @@ struct EditerView: View {
             CustomButton(title: "select a photo",systemIcon: "photo", showProggresView: .constant(false)) {
                 drawingViewModel.showPicker = true
             }
-            
+            Spacer()
         }
      }
 }

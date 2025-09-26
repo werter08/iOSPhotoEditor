@@ -15,7 +15,9 @@ struct FullExportView: View {
     var textBoxes: [TextBoxModel]
     var canDraw: Bool
     var toolPicker: PKToolPicker
-    
+    let imageScale: CGFloat
+    let imageRotation: Angle
+    let imageOffset: CGSize
     
     var body: some View {
         GeometryReader { proxy in
@@ -27,7 +29,13 @@ struct FullExportView: View {
                 Image(uiImage: uiImage)
                     .resizable()
                     .scaledToFit()
-                
+                    .scaleEffect(imageScale)
+                    .rotationEffect(imageRotation)
+                    .offset(
+                        x: imageOffset.width,
+                        y: imageOffset.height
+                    )
+
                 CanvasView(
                     canvas: .constant(canvasView),
                     canDraw: .constant(canDraw),

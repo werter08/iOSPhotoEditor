@@ -16,7 +16,10 @@ class DrawingViewModel: ObservableObject {
     @Published var canDraw = false
     @Published var isSaving = false
     @Published var addNewTextBox = false
+    @Published var resizeMode = true
      
+    @Published var size: CGSize = .zero
+    
     @Published var imageData = Data(count: 0)
     @Published var textBoxes: [TextBoxModel] = []
     
@@ -27,35 +30,38 @@ class DrawingViewModel: ObservableObject {
     @Published var currentTextInd: Int = 0
     @Published var textInd: Int? = nil
     
+    @Published var imageScale: CGFloat = 1.0
+    @Published var imageRotation: Angle = .zero
+    @Published var imageOffset: CGSize = .zero
+    
     func cancelImagediting() {
         withAnimation {
+            resizeMode = true
             imageData = Data(count: 0)
             canvas = PKCanvasView()
             toolPicker = PKToolPicker()
+            textBoxes = []
             canDraw = false
+            size = .zero
+            imageScale = 1.0
+            imageRotation = .zero
+            imageOffset = .zero
         }
     }
     
     func cancelTextAdding(isNewText: Bool = true) {
+        addNewTextBox = false
+
         withAnimation {
-            addNewTextBox = false
             canDraw = true
         }
-   
+
         if isNewText {
             textBoxes.removeLast()
             currentTextInd -= 1
         }
         
-        toolPicker.setVisible(true, forFirstResponder: canvas)
-        toolPicker.addObserver(canvas)
-        textInd = nil
-        
-        DispatchQueue.main.async {
-            if self.canvas.canBecomeFirstResponder {
-                self.canvas.becomeFirstResponder()
-            }
-        }
+        openToolPeeker()
        
     }
     
@@ -65,7 +71,24 @@ class DrawingViewModel: ObservableObject {
             addNewTextBox = false
             canDraw = true
         }
+        
+        openToolPeeker()
     }
+    
+    func openResizeMode() {
+        resizeMode = true
+        closeToolPeeker()
+        canvas.drawingPolicy = .pencilOnly
+    }
+    
+    
+    func openPaintMode() {
+        resizeMode = false
+        canvas.drawingPolicy = .anyInput
+        openToolPeeker()
+    }
+    
+    
     
     func startTextAdding(isNewText: Bool = true, textInd: Int? = nil) {
         if isNewText {
@@ -79,30 +102,31 @@ class DrawingViewModel: ObservableObject {
             canDraw = false
         }
         
-        toolPicker.setVisible(false, forFirstResponder: canvas)
-        toolPicker.removeObserver(canvas)
-        DispatchQueue.main.async {
-            self.canvas.resignFirstResponder()
-        }
+        closeToolPeeker()
     }
     
     
     func onSetImage() {
         canDraw = true
+        openToolPeeker()
     }
     
     
-
-
     func saveAnImage() {
         isSaving = true
         exportEverythingToImage()
+        closeToolPeeker()
     }
     
-    func exportEverythingToImage() {
+    func getInd(textBox: TextBoxModel) -> Int? {
+        textBoxes.firstIndex { textBox.id == $0.id }
+    }
+    
+
+    private func exportEverythingToImage() {
         guard let uiImage = UIImage(data: imageData) else {
-            return
             print("cant get an image")
+            return
         }
 
         let exportView = FullExportView(
@@ -110,28 +134,43 @@ class DrawingViewModel: ObservableObject {
             canvasView: canvas,
             textBoxes: textBoxes,
             canDraw: canDraw,
-            toolPicker: toolPicker
+            toolPicker: toolPicker,
+            imageScale: imageScale,
+            imageRotation: imageRotation,
+            imageOffset: imageOffset
         )
 
-        let size = CGSize(width: 1080, height: 1920) // or any size you want
+        let size = CGSize(width: size.width, height: size.height) 
         if let finalImage = CustomImageManager.renderViewToImage(exportView, size: size) {
             UIImageWriteToSavedPhotosAlbum(finalImage, nil, nil, nil)
             isSaving = false
+            cancelImagediting()
             print("✅ Exported successfully")
         } else {
             isSaving = false
+            cancelImagediting()
             print("❌ Failed to render image")
         }
     }
     
-    func getInd(textBox: TextBoxModel) -> Int? {
-        textBoxes.firstIndex { textBox.id == $0.id }
+    
+    private func openToolPeeker() {
+        toolPicker.setVisible(true, forFirstResponder: canvas)
+        toolPicker.addObserver(canvas)
+        
+        DispatchQueue.main.async {
+            if self.canvas.canBecomeFirstResponder {
+                self.canvas.becomeFirstResponder()
+            }
+        }
     }
     
-    func setData(imageData: Data = Data(count: 0), textBoxes: [TextBoxModel], canvas: PKCanvasView = PKCanvasView(), toolPicker: PKToolPicker = PKToolPicker()) {
-        self.imageData = imageData
-        self.textBoxes = textBoxes
-        self.canvas = canvas
-        self.toolPicker = toolPicker
+    
+    private func closeToolPeeker() {
+        toolPicker.setVisible(false, forFirstResponder: canvas)
+        toolPicker.removeObserver(canvas)
+        DispatchQueue.main.async {
+            self.canvas.resignFirstResponder()
+        }
     }
 }

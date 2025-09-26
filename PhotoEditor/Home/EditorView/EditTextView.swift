@@ -16,10 +16,13 @@ struct EditTextView: View {
             Color.black.opacity(0.75)
                 .ignoresSafeArea()
             
-            TextField("Type here", text: $drawingViewModel.textBoxes[drawingViewModel.textInd ?? drawingViewModel.currentTextInd].text)
-                .font(.system(size: 35))
-                .colorScheme(.dark)
-                .foregroundStyle(drawingViewModel.textBoxes[drawingViewModel.textInd ?? drawingViewModel.currentTextInd].textColor)
+            HStack {
+                TextField("Type here", text: $drawingViewModel.textBoxes[drawingViewModel.textInd ?? drawingViewModel.currentTextInd].text)
+                    .font(.system(size: drawingViewModel.textBoxes[drawingViewModel.textInd ?? drawingViewModel.currentTextInd].fontSize, weight: drawingViewModel.textBoxes[drawingViewModel.textInd ?? drawingViewModel.currentTextInd].isBold ? .bold : .regular))
+                    .colorScheme(.dark)
+                    .multilineTextAlignment(.center)
+                    .foregroundStyle(drawingViewModel.textBoxes[drawingViewModel.textInd ?? drawingViewModel.currentTextInd].textColor)
+            }
                 .frame(maxWidth: .infinity, alignment: .center)
             
             HStack {
@@ -27,7 +30,7 @@ struct EditTextView: View {
                 Button {
                     drawingViewModel.cancelTextAdding(isNewText: drawingViewModel.textInd == nil ? true : false)
                 } label: {
-                    Text("cancel")
+                    Text("Cancel")
                         .fontWeight(.heavy)
                         .foregroundStyle(.white)
                         .padding()
@@ -38,7 +41,7 @@ struct EditTextView: View {
                 Button {
                     drawingViewModel.addingNewText()
                 } label: {
-                    Text(drawingViewModel.textInd == nil ? "add" : "edit")
+                    Text(drawingViewModel.textInd == nil ? "Add" : "Edit")
                         .fontWeight(.heavy)
                         .foregroundStyle(.white)
                         .padding()
@@ -46,14 +49,33 @@ struct EditTextView: View {
                 
             }.frame(maxHeight: .infinity, alignment: .top )
             
-                .overlay(alignment: .top) {
-                    ColorPicker("", selection: $drawingViewModel.textBoxes[drawingViewModel.textInd ?? drawingViewModel.currentTextInd].textColor)
-                        .labelsHidden()
+                .overlay(alignment: .bottom) {
+                    VStack(spacing: 12) {
+                        CustomFontPickerView(
+                            fontSize: $drawingViewModel.textBoxes[
+                                drawingViewModel.textInd ?? drawingViewModel.currentTextInd
+                            ].fontSize
+                        )
+
+                        ColorPicker("", selection: $drawingViewModel.textBoxes[
+                            drawingViewModel.textInd ?? drawingViewModel.currentTextInd
+                        ].textColor)
+                            .labelsHidden()
+                            .frame(width: 40, height: 40)
+                            .padding(6)
+                            .background(Color.white.opacity(0.1))
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+
+                        Toggle("Bold", isOn: $drawingViewModel.textBoxes[
+                            drawingViewModel.textInd ?? drawingViewModel.currentTextInd
+                        ].isBold)
+                            .toggleStyle(SwitchToggleStyle(tint: .blue))
+                            .foregroundColor(.white)
+                    }
+                    .padding()
+                    .cornerRadius(20)
+                    .padding()
                 }
         }
     }
-}
-
-#Preview {
-    EditTextView()
 }
