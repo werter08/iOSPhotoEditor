@@ -12,13 +12,14 @@ import PhotosUI
 
 class DrawingViewModel: ObservableObject {
     @Published var showPicker = false
+    @Published var showResultView = false
     @Published var showCamera = false
-    @Published var canDraw = false
     @Published var isSaving = false
     @Published var addNewTextBox = false
     @Published var resizeMode = true
      
     @Published var size: CGSize = .zero
+    @Published var message = ""
     
     @Published var imageData = Data(count: 0)
     @Published var textBoxes: [TextBoxModel] = []
@@ -37,11 +38,11 @@ class DrawingViewModel: ObservableObject {
     func cancelImagediting() {
         withAnimation {
             resizeMode = true
+            showResultView = false
             imageData = Data(count: 0)
             canvas = PKCanvasView()
             toolPicker = PKToolPicker()
             textBoxes = []
-            canDraw = false
             size = .zero
             imageScale = 1.0
             imageRotation = .zero
@@ -51,10 +52,6 @@ class DrawingViewModel: ObservableObject {
     
     func cancelTextAdding(isNewText: Bool = true) {
         addNewTextBox = false
-
-        withAnimation {
-            canDraw = true
-        }
 
         if isNewText {
             textBoxes.removeLast()
@@ -69,7 +66,6 @@ class DrawingViewModel: ObservableObject {
         textInd = nil
         withAnimation {
             addNewTextBox = false
-            canDraw = true
         }
         
         openToolPeeker()
@@ -81,6 +77,16 @@ class DrawingViewModel: ObservableObject {
         canvas.drawingPolicy = .pencilOnly
     }
     
+    func openResultView() {
+        resizeMode = false
+        showResultView = true
+        closeToolPeeker()
+        canvas.drawingPolicy = .pencilOnly
+    }
+    
+    func closeResultView() {
+        resizeMode = true
+    }
     
     func openPaintMode() {
         resizeMode = false
@@ -99,7 +105,6 @@ class DrawingViewModel: ObservableObject {
         }
         withAnimation {
             addNewTextBox = true
-            canDraw = false
         }
         
         closeToolPeeker()
@@ -107,14 +112,13 @@ class DrawingViewModel: ObservableObject {
     
     
     func onSetImage() {
-        canDraw = true
         openToolPeeker()
     }
     
     
-    func saveAnImage() {
+    func saveAnImage(isSuccess: @escaping (Bool) -> ()) {
         isSaving = true
-        exportEverythingToImage()
+        isSuccess(exportEverythingToImage())
         closeToolPeeker()
     }
     
@@ -123,33 +127,33 @@ class DrawingViewModel: ObservableObject {
     }
     
 
-    private func exportEverythingToImage() {
+    private func exportEverythingToImage() -> Bool {
         guard let uiImage = UIImage(data: imageData) else {
             print("cant get an image")
-            return
+            return false
         }
 
         let exportView = FullExportView(
-            uiImage: uiImage,
-            canvasView: canvas,
-            textBoxes: textBoxes,
-            canDraw: canDraw,
-            toolPicker: toolPicker,
-            imageScale: imageScale,
-            imageRotation: imageRotation,
-            imageOffset: imageOffset
+            uiImage:        uiImage,
+            canvasView:     canvas,
+            textBoxes:      textBoxes,
+            toolPicker:     toolPicker,
+            imageScale:     imageScale,
+            imageRotation:  imageRotation,
+            imageOffset:    imageOffset,
+            exportImageSize:size
         )
 
         let size = CGSize(width: size.width, height: size.height) 
         if let finalImage = CustomImageManager.renderViewToImage(exportView, size: size) {
             UIImageWriteToSavedPhotosAlbum(finalImage, nil, nil, nil)
             isSaving = false
-            cancelImagediting()
-            print("✅ Exported successfully")
+//            cancelImagediting()
+            return true
         } else {
             isSaving = false
-            cancelImagediting()
-            print("❌ Failed to render image")
+//            cancelImagediting()
+            return false
         }
     }
     
@@ -167,8 +171,10 @@ class DrawingViewModel: ObservableObject {
     
     
     private func closeToolPeeker() {
-        toolPicker.setVisible(false, forFirstResponder: canvas)
-        toolPicker.removeObserver(canvas)
+        withAnimation {
+            toolPicker.setVisible(false, forFirstResponder: canvas)
+            toolPicker.removeObserver(canvas)
+        }
         DispatchQueue.main.async {
             self.canvas.resignFirstResponder()
         }

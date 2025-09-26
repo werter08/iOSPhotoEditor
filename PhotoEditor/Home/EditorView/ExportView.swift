@@ -13,44 +13,41 @@ struct FullExportView: View {
     var uiImage: UIImage
     var canvasView: PKCanvasView
     var textBoxes: [TextBoxModel]
-    var canDraw: Bool
     var toolPicker: PKToolPicker
     let imageScale: CGFloat
     let imageRotation: Angle
     let imageOffset: CGSize
+    let exportImageSize: CGSize
     
     var body: some View {
-        GeometryReader { proxy in
-            let size = proxy.size
-            
-            ZStack {
-                Color(.clear) // Background
-
-                Image(uiImage: uiImage)
-                    .resizable()
-                    .scaledToFit()
-                    .scaleEffect(imageScale)
-                    .rotationEffect(imageRotation)
-                    .offset(
-                        x: imageOffset.width,
-                        y: imageOffset.height
+        ZStack {
+            Color(.clear) // Background
+                .frame(width: exportImageSize.width, height: exportImageSize.height)
+                .overlay {
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .scaledToFit()
+                        .scaleEffect(imageScale)
+                        .rotationEffect(imageRotation)
+                        .offset(
+                            x: imageOffset.width,
+                            y: imageOffset.height
+                        )
+                    
+                    CanvasView(
+                        canvas: .constant(canvasView),
+                        toolPicker: .constant(toolPicker)
                     )
-
-                CanvasView(
-                    canvas: .constant(canvasView),
-                    canDraw: .constant(canDraw),
-                    toolPicker: .constant(toolPicker),
-                    rect: size
-                )
-
-                ForEach(textBoxes) { box in
-                    Text(box.text)
-                        .font(.system(size: box.fontSize, weight: box.isBold ? .bold : .regular))
-                        .foregroundStyle(box.textColor)
-                        .offset(box.offset)
-                        .fixedSize()
+                    
+                    ForEach(textBoxes) { box in
+                        Text(box.text)
+                            .font(.system(size: box.fontSize, weight: box.isBold ? .bold : .regular))
+                            .foregroundStyle(box.textColor)
+                            .offset(box.offset)
+                            .fixedSize()
+                    }
                 }
-            }
+                .clipped()
         }
     }
 }

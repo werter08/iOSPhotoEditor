@@ -27,17 +27,31 @@ struct EditableImageView: View {
                 x: drawingViewModel.imageOffset.width + gestureOffset.width,
                 y: drawingViewModel.imageOffset.height + gestureOffset.height
             )
-            .gesture(
-                drawingViewModel.resizeMode ? gesture : nil
-            )
+            .gesture(drawingViewModel.resizeMode ? gesture : nil)
             .background(
                 GeometryReader { proxy in
                     Color.clear
                         .onAppear {
-                            drawingViewModel.size = proxy.size
+                            let proposedSize = proxy.size
+                            let maxHeight = UIScreen.main.bounds.height / 1.75
+
+                            if proposedSize.height > maxHeight {
+                                let scale = maxHeight / proposedSize.height
+                                drawingViewModel.size = CGSize(
+                                    width: proposedSize.width * scale,
+                                    height: proposedSize.height * scale
+                                )
+                            } else {
+                                drawingViewModel.size = proposedSize
+                            }
                         }
                 }
             )
+            .frame(
+                width: drawingViewModel.size.width == 0 ? nil : drawingViewModel.size.width,
+                height: drawingViewModel.size.height == 0 ? nil : drawingViewModel.size.height
+            )
+
     }
     
     var gesture: some Gesture {

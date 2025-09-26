@@ -34,9 +34,7 @@ struct EditerView: View {
                             if drawingViewModel.size != .zero  {
                                 CanvasView(
                                     canvas: $drawingViewModel.canvas,
-                                    canDraw: $drawingViewModel.canDraw,
-                                    toolPicker: $drawingViewModel.toolPicker,
-                                    rect: drawingViewModel.size
+                                    toolPicker: $drawingViewModel.toolPicker
                                 )
                                 .frame(width: drawingViewModel.size.width, height: drawingViewModel.size.height)
                                 .clipped()
@@ -78,7 +76,7 @@ struct EditerView: View {
                             }
                         }
                         
-                        .padding(.vertical, 100)
+                        .padding(.vertical, drawingViewModel.resizeMode ? 10 : 90)
                         .padding(.horizontal, 20)
                         
                         
@@ -104,6 +102,12 @@ struct EditerView: View {
                 drawingViewModel.onSetImage()
             }
         })
+        .sheet(isPresented: $drawingViewModel.showResultView, onDismiss: {
+            drawingViewModel.closeResultView()
+        }, content: {
+            ResultView()
+        })
+        
         .environmentObject(drawingViewModel)
     }
     
@@ -123,7 +127,7 @@ struct EditerView: View {
             
             if drawingViewModel.imageData != Data(count: 0) {
                 Button {
-                    drawingViewModel.saveAnImage()
+                    drawingViewModel.openResultView()
                 } label: {
                     if drawingViewModel.isSaving {
                         ProgressView()
