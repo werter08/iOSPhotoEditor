@@ -15,12 +15,12 @@ struct EditerView: View {
     
     var body: some View {
         ZStack {
-            
             Group {
                 if drawingViewModel.imageData == Data(count: 0) {
                     emptyView
                 } else {
                     if let uiImage = UIImage(data: drawingViewModel.imageData) {
+                        
                         Image(uiImage: uiImage)
                             .resizable()
                             .scaledToFit()
@@ -35,6 +35,8 @@ struct EditerView: View {
                                     )
                                     .clipped()
                                     .id(refreshID)
+                                    
+                                    TextesLayerView()
                                 }
                             }
                     }
@@ -45,71 +47,66 @@ struct EditerView: View {
             .overlay(alignment: .top) {
                 topBarButtons
             }
+            .overlay(alignment: .center) {
+                if drawingViewModel.imageData != Data(count: 0) {
+                    if drawingViewModel.imageData != Data(count: 0) {
+                        CustomButton(title: "Add text", systemIcon: "plus", showProggresView: .constant(false)) {
+                            drawingViewModel.startTextAdding()
+                        }
+                        .padding(.horizontal, 50)
+                    }
+                }
+            }
             
             if drawingViewModel.addNewTextBox {
-                Color.black.opacity(0.75)
-                    .ignoresSafeArea()
-                
-                TextField("Type here", text: $drawingViewModel.textBoxes[drawingViewModel.currentTextInd].text)
-                    .font(.system(size: 35))
-                    .colorScheme(.dark)
-                
-                HStack {
-                    Button {
-                        
-                    } label: {
-                        Text("add")
-                            .fontWeight(.heavy)
-                            .foregroundStyle(.white)
-                            .padding()
-                    }
-                    Spacer()
-                    Button {
-                        drawingViewModel.cancelTextAdding()
-                    } label: {
-                        Text("cancel")
-                            .fontWeight(.heavy)
-                            .foregroundStyle(.white)
-                            .padding()
-                    }
-                }.frame(maxHeight: .infinity, alignment: .top )
+                EditTextView()
             }
         }
         
         .sheet(isPresented: $drawingViewModel.showCamera, content: {
-            CameraView(imageData: $drawingViewModel.imageData) {
+//            CameraView(imageData: $drawingViewModel.imageData) {
+//                drawingViewModel.onSetImage()
+//            }
+            if let uiImage = UIImage(data: drawingViewModel.imageData) {
+                FullExportView(
+                    uiImage:    uiImage,
+                    canvasView: drawingViewModel.canvas,
+                    textBoxes:  drawingViewModel.textBoxes,
+                    canDraw:    drawingViewModel.canDraw,
+                    toolPicker: drawingViewModel.toolPicker
+                    )
+                .frame(width: 1080/4, height: 1920/4)
+            } else {
+                EmptyView()
+            }
+            
+        })
+        .sheet(isPresented: $drawingViewModel.showPicker, content: {
+            PickerView(imageData: $drawingViewModel.imageData) {
                 drawingViewModel.onSetImage()
             }
         })
-        .onChange(of: drawingViewModel.selecteedItem) { newItem in
-            if let newItem {
-                Task {
-                    if let data = try? await newItem.loadTransferable(type: Data.self) {
-                        drawingViewModel.imageData = data
-                        drawingViewModel.onSetImage()
-                    }
-                }
-            }
-        }
+        .environmentObject(drawingViewModel)
     }
     
     @ViewBuilder
     var topBarButtons: some View {
         HStack(spacing: 18) {
-            
-            Button {
-                drawingViewModel.cancelImagediting()
-                refreshID = UUID()
-            } label: {
-                Image(systemName: "xmark")
+            if drawingViewModel.imageData != Data(count: 0) {
+                Button {
+                    drawingViewModel.cancelImagediting()
+                    refreshID = UUID()
+                } label: {
+                    Image(systemName: "xmark")
                     
+                }
             }
-            
             Spacer()
             
             if drawingViewModel.imageData != Data(count: 0) {
                 Button {
                     drawingViewModel.saveAnImage()
+                    drawingViewModel.showCamera = true
                 } label: {
                     if drawingViewModel.isSaving {
                         ProgressView()
@@ -117,23 +114,6 @@ struct EditerView: View {
                     } else {
                         Text("save photo")
                     }
-                }
-                
-                Button {
-                    drawingViewModel.startTextAdding()
-                } label: {
-                    Image(systemName: "plus")
-                }
-            } else {
-                
-                Button {
-                    drawingViewModel.showCamera = true
-                } label: {
-                    Image(systemName: "camera")
-                }
-                
-                PhotosPicker(selection: $drawingViewModel.selecteedItem, matching: .images) {
-                    Image(systemName: "photo")
                 }
             }
         }.padding()
@@ -143,15 +123,17 @@ struct EditerView: View {
     
     @ViewBuilder
     var emptyView: some View {
-        Text("No image yet")
-            .frame(maxWidth: .infinity)
-            .foregroundStyle(.black)
-            .frame(height: 400)
-            .background(Color.gray.opacity(0.5))
-            .cornerRadius(12)
+        VStack {
+            CustomButton(title: "make a photo",systemIcon: "camera", showProggresView: .constant(false)) {
+                drawingViewModel.showCamera = true
+            }
+             
+            CustomButton(title: "select a photo",systemIcon: "photo", showProggresView: .constant(false)) {
+                drawingViewModel.showPicker = true
+            }
+            
+        }
      }
- 
-   
 }
 
 #Preview {

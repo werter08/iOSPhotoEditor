@@ -12,7 +12,7 @@ struct ContentView: View {
     @AppStorage("user_authorized") var isAuthorized: Bool = false
     
     var body: some View {
-        NavigationStack {
+        NavigationView {
             if isAuthorized {
                 EditerView()
             } else {

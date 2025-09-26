@@ -23,9 +23,9 @@ class DrawingViewModel: ObservableObject {
     
     @Published var canvas = PKCanvasView()
     @Published var toolPicker = PKToolPicker()
-    @Published var selecteedItem: PhotosPickerItem?
     
     @Published var currentTextInd: Int = 0
+    @Published var textInd: Int? = nil
     
     func cancelImagediting() {
         withAnimation {
@@ -36,21 +36,53 @@ class DrawingViewModel: ObservableObject {
         }
     }
     
-    func cancelTextAdding() {
-        textBoxes.removeLast()
-        currentTextInd -= 1
+    func cancelTextAdding(isNewText: Bool = true) {
+        withAnimation {
+            addNewTextBox = false
+            canDraw = true
+        }
+   
+        if isNewText {
+            textBoxes.removeLast()
+            currentTextInd -= 1
+        }
+        
+        toolPicker.setVisible(true, forFirstResponder: canvas)
+        toolPicker.addObserver(canvas)
+        textInd = nil
+        
+        DispatchQueue.main.async {
+            if self.canvas.canBecomeFirstResponder {
+                self.canvas.becomeFirstResponder()
+            }
+        }
+       
+    }
+    
+    func addingNewText() {
+        textInd = nil
         withAnimation {
             addNewTextBox = false
             canDraw = true
         }
     }
     
-    func startTextAdding() {
-        textBoxes.append(TextBoxModel())
-        currentTextInd = textBoxes.count - 1
+    func startTextAdding(isNewText: Bool = true, textInd: Int? = nil) {
+        if isNewText {
+            textBoxes.append(TextBoxModel())
+            currentTextInd = textBoxes.count - 1
+        } else {
+            self.textInd = textInd
+        }
         withAnimation {
             addNewTextBox = true
             canDraw = false
+        }
+        
+        toolPicker.setVisible(false, forFirstResponder: canvas)
+        toolPicker.removeObserver(canvas)
+        DispatchQueue.main.async {
+            self.canvas.resignFirstResponder()
         }
     }
     
@@ -60,52 +92,46 @@ class DrawingViewModel: ObservableObject {
     }
     
     
+
+
+    func saveAnImage() {
+        isSaving = true
+        exportEverythingToImage()
+    }
     
-    func mergeCanvasDrawingWithImageData(
-        imageData: Data,
-        canvasView: PKCanvasView,
-        exportAsJPEG: Bool = false,
-        compressionQuality: CGFloat = 0.9
-    ) -> Data? {
-        
-        // Step 1: Convert Data to UIImage
-        guard let backgroundImage = UIImage(data: imageData) else {
-            print("Failed to convert imageData to UIImage")
-            return nil
+    func exportEverythingToImage() {
+        guard let uiImage = UIImage(data: imageData) else {
+            return
+            print("cant get an image")
         }
 
-        let imageSize = backgroundImage.size
+        let exportView = FullExportView(
+            uiImage: uiImage,
+            canvasView: canvas,
+            textBoxes: textBoxes,
+            canDraw: canDraw,
+            toolPicker: toolPicker
+        )
 
-        // Step 2: Create graphics renderer
-        let renderer = UIGraphicsImageRenderer(size: imageSize)
-
-        let mergedImage = renderer.image { context in
-            // Draw background image
-            backgroundImage.draw(in: CGRect(origin: .zero, size: imageSize))
-
-            // Draw the PKDrawing scaled to match the image size
-            let drawingImage = canvasView.drawing.image(from: CGRect(origin: .zero, size: canvasView.bounds.size), scale: 1.0)
-            
-            // Scale drawing to fit background image size
-            drawingImage.draw(in: CGRect(origin: .zero, size: imageSize))
-        }
-
-        // Step 3: Convert to Data (JPEG or PNG)
-        if exportAsJPEG {
-            return mergedImage.jpegData(compressionQuality: compressionQuality)
+        let size = CGSize(width: 1080, height: 1920) // or any size you want
+        if let finalImage = CustomImageManager.renderViewToImage(exportView, size: size) {
+            UIImageWriteToSavedPhotosAlbum(finalImage, nil, nil, nil)
+            isSaving = false
+            print("✅ Exported successfully")
         } else {
-            return mergedImage.pngData()
+            isSaving = false
+            print("❌ Failed to render image")
         }
     }
     
-    func saveAnImage() {
-        isSaving = true
-        if let imageData = mergeCanvasDrawingWithImageData(imageData: imageData, canvasView: canvas) {
-            CustomImageManager.saveImageToPhotoLibrary(image: UIImage(data: imageData)) {
-                DispatchQueue.main.async {
-                    self.isSaving = false
-                }
-            }
-        }
+    func getInd(textBox: TextBoxModel) -> Int? {
+        textBoxes.firstIndex { textBox.id == $0.id }
+    }
+    
+    func setData(imageData: Data = Data(count: 0), textBoxes: [TextBoxModel], canvas: PKCanvasView = PKCanvasView(), toolPicker: PKToolPicker = PKToolPicker()) {
+        self.imageData = imageData
+        self.textBoxes = textBoxes
+        self.canvas = canvas
+        self.toolPicker = toolPicker
     }
 }

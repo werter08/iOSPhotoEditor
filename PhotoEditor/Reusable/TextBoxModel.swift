@@ -7,12 +7,13 @@
 
 import SwiftUI
 
+
 struct TextBoxModel: Identifiable {
-    
     var id = UUID().uuidString
-    var isBold = false
-    var text = ""
-    var offset: CGRect = .zero
-    var lastOffset: CGRect = .zero
-    var textColor: Color = .black
+    var text: String = ""
+    var fontSize: CGFloat = 32
+    var isBold: Bool = false
+    var offset: CGSize = .zero
+    var lastOffset: CGSize = .zero
+    var textColor: Color = .white
 }

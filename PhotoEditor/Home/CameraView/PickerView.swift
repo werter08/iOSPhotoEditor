@@ -9,7 +9,7 @@ import SwiftUI
 import UIKit
 import Foundation
 
-struct CameraView: UIViewControllerRepresentable {
+struct PickerView: UIViewControllerRepresentable {
     // for get access parents image
     @Binding var imageData: Data
     var onSet: (() -> ())?
@@ -24,7 +24,7 @@ struct CameraView: UIViewControllerRepresentable {
         picker.delegate = context.coordinator
         
         // make the source camera
-        picker.sourceType = .camera
+        picker.sourceType = .photoLibrary
         
         return picker
     }
@@ -38,16 +38,15 @@ struct CameraView: UIViewControllerRepresentable {
     }
     
     class Coordinator: NSObject, UINavigationControllerDelegate, UIImagePickerControllerDelegate {
-        let parent: CameraView
+        let parent: PickerView
         
-        init(parent: CameraView) {
+        init(parent: PickerView) {
             self.parent = parent
         }
         
         func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-            if let image = (info[.originalImage] as? UIImage)?.pngData() {
-                parent.imageData = image
-                parent.onSet?()
+            if let imageData = (info[.originalImage] as? UIImage)?.pngData() {
+                parent.imageData = imageData
                 parent.presentationMode.wrappedValue.dismiss()
             }
         }

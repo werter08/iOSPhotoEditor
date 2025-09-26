@@ -8,6 +8,7 @@ import SwiftUI
 
 struct CustomButton: View {
     var title: String
+    var systemIcon: String?
     var maxWidthIsInfinity: Bool = true
     var font: Font = .headline
     var foregroundColor: Color = .white
@@ -35,27 +36,34 @@ struct CustomButton: View {
             }
             action()
         }) {
-            if showProggresView {
-                ProgressView()
-            } else {
-                Text(title)
-   
+            Group {
+                if showProggresView {
+                    ProgressView()
+                } else {
+                    HStack {
+                        Image(systemName: systemIcon ?? "")
+                        Text(title)
+                        
+                    }
+                    
+                }
             }
+            .font(font)
+            .tint(.white)
+            .foregroundColor(foregroundColor)
+            .padding(.horizontal, horizontalPadding)
+            .padding(.vertical, verticalPadding)
+            .frame(maxWidth: maxWidthIsInfinity ? .infinity : .none)
+            .background(backgroundColor)
+            .cornerRadius(cornerRadius)
+            .scaleEffect(isPressed ? 0.95 : 1.0)
+
         }
-        .font(font)
-        .tint(.white)
-        .foregroundColor(foregroundColor)
-        .padding(.horizontal, horizontalPadding)
-        .padding(.vertical, verticalPadding)
-        .frame(maxWidth: maxWidthIsInfinity ? .infinity : .none)
-        .background(backgroundColor)
-        .cornerRadius(cornerRadius)
-        .scaleEffect(isPressed ? 0.95 : 1.0)
         .buttonStyle(.plain)
     }
 }
 
 
 #Preview {
-    CustomButton(title: "send data", showProggresView: .constant(true), action: {})
+    CustomButton(title: "send data", systemIcon: "photo", showProggresView: .constant(false), action: {})
 }

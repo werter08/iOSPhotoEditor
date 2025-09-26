@@ -22,7 +22,7 @@ struct CanvasView: UIViewRepresentable {
     func makeUIView(context: Context) -> PKCanvasView {
         canvas.isOpaque = false
         
-        canvas.drawingPolicy = canDraw ? .anyInput : .pencilOnly
+        canvas.drawingPolicy = .anyInput
         
         // Set the canvas size by constraining its frame
         canvas.backgroundColor = .clear
@@ -39,16 +39,5 @@ struct CanvasView: UIViewRepresentable {
 
     func updateUIView(_ uiView: PKCanvasView, context: Context) {
         // Update drawing policy
-        uiView.drawingPolicy = canDraw ? .anyInput : .pencilOnly
-        
-        if canDraw {
-            toolPicker.setVisible(true, forFirstResponder: uiView)
-            toolPicker.addObserver(uiView)
-            uiView.becomeFirstResponder()
-        } else {
-            toolPicker.setVisible(false, forFirstResponder: uiView)
-            toolPicker.removeObserver(uiView)
-            uiView.resignFirstResponder()
-        }
     }
 }
