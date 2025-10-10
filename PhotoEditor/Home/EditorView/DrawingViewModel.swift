@@ -55,7 +55,7 @@ class DrawingViewModel: ObservableObject {
 
         if isNewText {
             textBoxes.removeLast()
-            currentTextInd -= 1
+            currentTextInd = max(0, currentTextInd-1)
         }
         
         openToolPeeker()
